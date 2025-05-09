@@ -43,7 +43,15 @@ public class RecruiterService {
     public void update(Long id, RecruiterRequestDTO request) {
         Recruiter recruiter = recruiterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Recruiter not found with id: " + id));
-        modelMapper.map(request, recruiter);
+
+        // Update only non-null fields
+        if (request.getEmail() != null) recruiter.setEmail(request.getEmail());
+        if (request.getFullName() != null) recruiter.setFullName(request.getFullName());
+        if (request.getPassword() != null) recruiter.setPassword(request.getPassword());
+        if (request.getCompany() != null) recruiter.setCompany(request.getCompany());
+        if (request.getDepartment() != null) recruiter.setDepartment(request.getDepartment());
+
         recruiterRepository.save(recruiter);
     }
+
 }
