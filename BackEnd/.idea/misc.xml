@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/AI_Matching/pom.xml" />
+        <option value="$PROJECT_DIR$/Api_Gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/MessagingService/MessagingService/pom.xml" />
+        <option value="$PROJECT_DIR$/Service_Discovery/pom.xml" />
+        <option value="$PROJECT_DIR$/User_MicroService/UserMicroService/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" default="true" project-jdk-name="openjdk-23" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>
