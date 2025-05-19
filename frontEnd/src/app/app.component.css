@@ -1,0 +1,25 @@
+/* Base styles for the app component */
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* Main container style */
+.app-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure router-outlet container takes up remaining space */
+:host ::ng-deep router-outlet + * {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Global transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}

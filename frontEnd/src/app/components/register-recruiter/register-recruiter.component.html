@@ -1,0 +1,140 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title>Recruiter Registration</mat-card-title>
+      <mat-card-subtitle>Create your recruiter account</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form (ngSubmit)="onRegister()" #recruiterForm="ngForm" novalidate>
+        <div class="form-container">
+          <!-- Account Information Section -->
+          <h3 class="section-title">Account Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              type="email"
+              placeholder="Enter your email"
+              [(ngModel)]="recruiter.email"
+              name="email"
+              required
+              email
+              #emailInput="ngModel">
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+              <span *ngIf="emailInput.errors?.['required']">Email is required</span>
+              <span *ngIf="emailInput.errors?.['email']">Please enter a valid email</span>
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              placeholder="Enter your password"
+              [(ngModel)]="recruiter.password"
+              name="password"
+              required
+              minlength="6"
+              #passwordInput="ngModel">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hidePassword">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+              <span *ngIf="passwordInput.errors?.['required']">Password is required</span>
+              <span *ngIf="passwordInput.errors?.['minlength']">Password must be at least 6 characters</span>
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Personal Information Section -->
+          <h3 class="section-title">Personal Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your full name"
+              [(ngModel)]="recruiter.fullName"
+              name="fullName"
+              required
+              #fullNameInput="ngModel">
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
+              Full name is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Company Information Section -->
+          <h3 class="section-title">Company Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Company</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your company name"
+              [(ngModel)]="recruiter.company"
+              name="company"
+              required
+              #companyInput="ngModel">
+            <mat-icon matPrefix>business</mat-icon>
+            <mat-error *ngIf="companyInput.invalid && (companyInput.dirty || companyInput.touched)">
+              Company name is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Department</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your department"
+              [(ngModel)]="recruiter.department"
+              name="department"
+              required
+              #departmentInput="ngModel">
+            <mat-icon matPrefix>corporate_fare</mat-icon>
+            <mat-error *ngIf="departmentInput.invalid && (departmentInput.dirty || departmentInput.touched)">
+              Department is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          <mat-icon>error</mat-icon> {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="success-message">
+          <mat-icon>check_circle</mat-icon> {{ successMessage }}
+        </div>
+
+        <div class="button-container">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="register-button"
+            [disabled]="recruiterForm.invalid">
+            <mat-icon>business_center</mat-icon> Register
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <span class="login-prompt">Already have an account?</span>
+      <a mat-button color="accent" routerLink="/login">Login</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

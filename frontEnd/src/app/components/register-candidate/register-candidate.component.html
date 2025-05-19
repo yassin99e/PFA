@@ -1,0 +1,198 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title>Candidate Registration</mat-card-title>
+      <mat-card-subtitle>Create your candidate account</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form (ngSubmit)="onRegister()" #candidateForm="ngForm" novalidate>
+        <div class="form-container">
+          <!-- Account Information Section -->
+          <h3 class="section-title">Account Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              type="email"
+              placeholder="Enter your email"
+              [(ngModel)]="candidate.email"
+              name="email"
+              required
+              email
+              #emailInput="ngModel">
+            <mat-icon matPrefix>email</mat-icon>
+            <mat-error *ngIf="emailInput.invalid && (emailInput.dirty || emailInput.touched)">
+              <span *ngIf="emailInput.errors?.['required']">Email is required</span>
+              <span *ngIf="emailInput.errors?.['email']">Please enter a valid email</span>
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              placeholder="Enter your password"
+              [(ngModel)]="candidate.password"
+              name="password"
+              required
+              minlength="6"
+              #passwordInput="ngModel">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hidePassword">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)">
+              <span *ngIf="passwordInput.errors?.['required']">Password is required</span>
+              <span *ngIf="passwordInput.errors?.['minlength']">Password must be at least 6 characters</span>
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Personal Information Section -->
+          <h3 class="section-title">Personal Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your full name"
+              [(ngModel)]="candidate.fullName"
+              name="fullName"
+              required
+              #fullNameInput="ngModel">
+            <mat-icon matPrefix>person</mat-icon>
+            <mat-error *ngIf="fullNameInput.invalid && (fullNameInput.dirty || fullNameInput.touched)">
+              Full name is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Phone</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your phone number"
+              [(ngModel)]="candidate.phone"
+              name="phone"
+              required
+              #phoneInput="ngModel">
+            <mat-icon matPrefix>phone</mat-icon>
+            <mat-error *ngIf="phoneInput.invalid && (phoneInput.dirty || phoneInput.touched)">
+              Phone number is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Professional Information Section -->
+          <h3 class="section-title">Professional Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Profile</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your professional profile"
+              [(ngModel)]="candidate.profile"
+              name="profile"
+              required
+              #profileInput="ngModel">
+            <mat-icon matPrefix>work</mat-icon>
+            <mat-error *ngIf="profileInput.invalid && (profileInput.dirty || profileInput.touched)">
+              Profile is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Diploma</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter your highest diploma"
+              [(ngModel)]="candidate.diploma"
+              name="diploma"
+              required
+              #diplomaInput="ngModel">
+            <mat-icon matPrefix>school</mat-icon>
+            <mat-error *ngIf="diplomaInput.invalid && (diplomaInput.dirty || diplomaInput.touched)">
+              Diploma is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Years of Experience</mat-label>
+            <input
+              matInput
+              type="number"
+              placeholder="Enter years of experience"
+              [(ngModel)]="candidate.yearsOfExperience"
+              name="yearsOfExperience"
+              required
+              min="0"
+              #yearsInput="ngModel">
+            <mat-icon matPrefix>timeline</mat-icon>
+            <mat-error *ngIf="yearsInput.invalid && (yearsInput.dirty || yearsInput.touched)">
+              <span *ngIf="yearsInput.errors?.['required']">Years of experience is required</span>
+              <span *ngIf="yearsInput.errors?.['min']">Years cannot be negative</span>
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Technologies</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter technologies (comma separated)"
+              [(ngModel)]="technologiesInput"
+              name="technologies">
+            <mat-icon matPrefix>code</mat-icon>
+            <mat-hint>Example: Angular, React, Node.js</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Interested Profiles</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Enter interested profiles (comma separated)"
+              [(ngModel)]="interestedProfilesInput"
+              name="interestedProfiles">
+            <mat-icon matPrefix>interests</mat-icon>
+            <mat-hint>Example: Frontend Developer, UX Designer</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          <mat-icon>error</mat-icon> {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="success-message">
+          <mat-icon>check_circle</mat-icon> {{ successMessage }}
+        </div>
+
+        <div class="button-container">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            class="register-button"
+            [disabled]="candidateForm.invalid">
+            <mat-icon>person_add</mat-icon> Register
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <span class="login-prompt">Already have an account?</span>
+      <a mat-button color="accent" routerLink="/login">Login</a>
+    </mat-card-actions>
+  </mat-card>
+</div>

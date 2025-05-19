@@ -1,0 +1,168 @@
+<div class="home-container">
+  <div class="welcome-section">
+    <ng-container *ngIf="currentUser; else guestWelcome">
+      <h1><span class="user-greeting">Welcome back, {{ userDisplayName }}!</span></h1>
+      <p class="subtitle">Ready to discover new opportunities today?</p>
+      <div class="user-info-banner">
+        <mat-icon>account_circle</mat-icon>
+        <span>{{ currentUser.email }}</span>
+        <mat-chip color="primary" selected>
+          {{ currentUser.role | titlecase }}
+        </mat-chip>
+      </div>
+    </ng-container>
+    <ng-template #guestWelcome>
+      <h1>Find Your Perfect Match</h1>
+      <p class="subtitle">Connecting top talent with outstanding opportunities</p>
+      <div class="action-buttons mt-4">
+        <button mat-raised-button color="primary" class="action-button" routerLink="/login">
+          <mat-icon>login</mat-icon>
+          Sign In
+        </button>
+        <button mat-raised-button color="accent" class="action-button" routerLink="/register-candidate">
+          <mat-icon>person_add</mat-icon>
+          Join as Candidate
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="features-section">
+    <mat-card class="feature-card">
+      <mat-card-header>
+        <div mat-card-avatar class="feature-icon">
+          <mat-icon>search</mat-icon>
+        </div>
+        <mat-card-title>Find Talent</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          Discover skilled professionals across various domains. Our platform makes it easy to find the perfect match for your company's needs with advanced filtering and AI-powered matching.
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="feature-card">
+      <mat-card-header>
+        <div mat-card-avatar class="feature-icon">
+          <mat-icon>work</mat-icon>
+        </div>
+        <mat-card-title>Explore Opportunities</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          Browse through job postings from leading companies. Find roles that match your skills and career aspirations, with personalized recommendations based on your profile and experience.
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="feature-card">
+      <mat-card-header>
+        <div mat-card-avatar class="feature-icon">
+          <mat-icon>chat</mat-icon>
+        </div>
+        <mat-card-title>Connect Directly</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p>
+          Communication made simple. Connect with candidates or recruiters directly through our integrated messaging platform, schedule interviews, and manage your hiring pipeline efficiently.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Statistics Section (New) -->
+  <div class="stats-section">
+    <div class="stats-header">
+      <h2>Talent Connect by the Numbers</h2>
+      <p>Trusted by thousands of companies and professionals worldwide</p>
+    </div>
+    <div class="stats-container">
+      <div class="stat-item">
+        <div class="stat-value">10,000+</div>
+        <div class="stat-label">Active Jobs</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">50,000+</div>
+        <div class="stat-label">Professionals</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">5,000+</div>
+        <div class="stat-label">Companies</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">85%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick actions for logged-in users -->
+  <div class="quick-actions" *ngIf="currentUser">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+      <button mat-raised-button color="primary" class="action-button">
+        <mat-icon>person_search</mat-icon>
+        Browse Jobs
+      </button>
+      <button mat-raised-button color="accent" class="action-button">
+        <mat-icon>edit</mat-icon>
+        Update Profile
+      </button>
+      <button mat-raised-button class="action-button">
+        <mat-icon>message</mat-icon>
+        Messages
+      </button>
+    </div>
+  </div>
+
+  <!-- Testimonials Section (New) -->
+  <div class="testimonials-section">
+    <h2>What Our Users Say</h2>
+    <div class="testimonials-container">
+      <mat-card class="testimonial-card">
+        <mat-card-content>
+          <p class="testimonial-text">
+            "Talent Connect helped me find my dream job in just two weeks. The platform is intuitive and the job recommendations were spot on!"
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">JD</div>
+            <div class="author-info">
+              <div class="author-name">Jane Doe</div>
+              <div class="author-title">Software Engineer</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="testimonial-card">
+        <mat-card-content>
+          <p class="testimonial-text">
+            "As a recruiter, this platform has transformed our hiring process. We've reduced our time-to-hire by 40% and found amazing candidates."
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">JS</div>
+            <div class="author-info">
+              <div class="author-name">John Smith</div>
+              <div class="author-title">HR Director</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Call to Action (New) -->
+  <div class="cta-section" *ngIf="!currentUser">
+    <h2>Ready to Take the Next Step?</h2>
+    <p>Join thousands of professionals who have found their perfect career match through Talent Connect</p>
+    <div class="cta-buttons">
+      <button mat-raised-button color="primary" class="cta-button" routerLink="/register-candidate">
+        Join as a Candidate
+      </button>
+      <button mat-raised-button color="accent" class="cta-button" routerLink="/register-recruiter">
+        Sign Up as a Recruiter
+      </button>
+    </div>
+  </div>
+</div>
