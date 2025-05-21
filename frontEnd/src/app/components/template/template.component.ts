@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { MatSidenav } from '@angular/material/sidenav';
+import {MessagingService} from '../../services/messaging.service';
 
 @Component({
   selector: 'app-template',
@@ -11,8 +12,37 @@ import { MatSidenav } from '@angular/material/sidenav';
 })
 export class TemplateComponent {
   @ViewChild('sidenav') sidenav!: MatSidenav;
+  unreadCount = 0;
+  constructor(
+    private userService: UserService,
+    private messagingService: MessagingService,
+    private router: Router) {}
 
-  constructor(private userService: UserService, private router: Router) {}
+  ngOnInit() {
+    // Subscribe to unread messages
+    this.messagingService.unreadMessages$.subscribe(count => {
+      this.unreadCount = count;
+    });
+
+    // Load unread count if user is logged in
+    if (this.isLoggedIn) {
+      const currentUser = this.userService.getCurrentUser();
+      if (currentUser) {
+        this.loadUnreadCount(currentUser.id);
+      }
+    }
+  }
+
+  private loadUnreadCount(userId: number) {
+    this.messagingService.getUnreadCount(userId).subscribe({
+      next: (count) => {
+        this.unreadCount = count;
+      },
+      error: (err) => {
+        console.error('Error loading unread count:', err);
+      }
+    });
+  }
 
   get isLoggedIn(): boolean {
     return this.userService.isAuthenticated();

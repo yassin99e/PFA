@@ -1,0 +1,58 @@
+<!-- src/app/components/messaging/chat/chat.component.html -->
+<div class="chat-container">
+  <div class="chat-header" *ngIf="conversation">
+    <button mat-icon-button class="back-button" routerLink="/messaging">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div class="participant-info">
+      <h2>{{ getOtherParticipantName() }}</h2>
+      <span class="status">{{ isOnline() ? 'Online' : 'Offline' }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading conversation...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadConversation()">Retry</button>
+  </div>
+
+  <div class="messages-container" #messageContainer *ngIf="!loading && !error">
+    <div *ngIf="messages.length === 0" class="no-messages">
+      <mat-icon>forum</mat-icon>
+      <p>No messages yet. Start the conversation!</p>
+    </div>
+
+    <div *ngFor="let message of messages"
+         [ngClass]="{'message': true, 'sent': isSentByCurrentUser(message), 'received': !isSentByCurrentUser(message)}">
+      <div class="message-content">
+        <p>{{ message.content }}</p>
+        <span class="message-time">{{ formatTime(message.timestamp) }}</span>
+        <span class="message-status" *ngIf="isSentByCurrentUser(message)">
+          <mat-icon *ngIf="message.isRead" class="read-icon">done_all</mat-icon>
+          <mat-icon *ngIf="!message.isRead" class="sent-icon">done</mat-icon>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="message-input-container" *ngIf="!loading && !error">
+    <mat-form-field appearance="outline" class="message-input">
+      <input matInput
+             [formControl]="messageContent"
+             placeholder="Type a message..."
+             (keyup.enter)="sendMessage()">
+    </mat-form-field>
+    <button mat-icon-button
+            color="primary"
+            class="send-button"
+            [disabled]="messageContent.invalid"
+            (click)="sendMessage()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+</div>

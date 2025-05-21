@@ -1,0 +1,61 @@
+<!-- src/app/components/messaging/conversation-list/conversation-list.component.html -->
+<div class="conversation-list-container">
+  <div class="header">
+    <h2>Messages</h2>
+    <button
+      mat-raised-button
+      color="primary"
+      class="new-conversation-button"
+      *ngIf="isRecruiter()"
+      (click)="startNewConversation()">
+      <mat-icon>add</mat-icon> New Conversation
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading conversations...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadConversations()">Retry</button>
+  </div>
+
+  <div class="conversations" *ngIf="!loading && !error">
+    <div *ngIf="conversations.length === 0" class="no-conversations">
+      <mat-icon>forum</mat-icon>
+      <p>No conversations yet</p>
+      <button
+        mat-raised-button
+        color="primary"
+        *ngIf="isRecruiter()"
+        (click)="startNewConversation()">
+        Start a Conversation
+      </button>
+    </div>
+
+    <mat-card
+      *ngFor="let conversation of conversations"
+      class="conversation-card"
+      [ngClass]="{'unread': hasUnreadMessages(conversation)}"
+      (click)="openConversation(conversation.id)">
+      <div class="avatar">
+        <mat-icon>account_circle</mat-icon>
+        <div class="status-indicator" [ngClass]="{'online': isUserOnline(conversation)}"></div>
+      </div>
+      <div class="conversation-info">
+        <div class="conversation-header">
+          <h3>{{ getOtherParticipantName(conversation) }}</h3>
+          <span class="time">{{ getLastMessageTime(conversation) }}</span>
+        </div>
+        <p class="last-message">{{ getLastMessage(conversation) }}</p>
+      </div>
+      <div class="unread-badge" *ngIf="hasUnreadMessages(conversation)">
+        {{ getUnreadCount(conversation) }}
+      </div>
+    </mat-card>
+  </div>
+  <router-outlet></router-outlet>
+</div>

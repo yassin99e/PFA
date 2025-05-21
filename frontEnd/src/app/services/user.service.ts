@@ -120,4 +120,18 @@ export class UserService {
   registerRecruiter(recruiterData: RecruiterDTO): Observable<any> {
     return this.http.post(`${API_URL}/recruiter/register`, recruiterData);
   }
+
+  // Add these methods to your existing UserService
+  getAllCandidates(): Observable<any[]> {
+    return this.http.get<any[]>(`${API_URL}/candidate/all`);
+  }
+
+  getAllRecruiters(): Observable<any[]> {
+    return this.http.get<any[]>(`${API_URL}/recruiter/all`);
+  }
+
+  getUserById(userId: number): Observable<UserData> {
+    return this.http.get<UserData>(`${API_URL}/users/${userId}`);
+  }
+
 }

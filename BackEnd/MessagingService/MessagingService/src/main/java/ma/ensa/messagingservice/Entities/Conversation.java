@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ma.ensa.messagingservice.DTOs.ConversationStatus;
 
 
 import java.time.LocalDateTime;
@@ -32,5 +33,22 @@ public class Conversation {
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Message> messages = new ArrayList<>();
 
-    // Getters and setters
+    private Long initiatorId;
+
+    // Adding conversation status
+    @Enumerated(EnumType.STRING)
+    private ConversationStatus status = ConversationStatus.ACTIVE;
+
+    // Get last message timestamp for sorting
+    @Transient
+    public LocalDateTime getLastActivityTime() {
+        if (messages == null || messages.isEmpty()) {
+            return startedAt;
+        }
+        return messages.stream()
+                .map(Message::getTimestamp)
+                .max(LocalDateTime::compareTo)
+                .orElse(startedAt);
+    }
+
 }

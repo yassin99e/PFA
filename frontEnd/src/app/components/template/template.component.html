@@ -1,7 +1,7 @@
 <!-- template.component.html -->
 <div class="app-container">
   <!-- Modern Navigation Bar -->
-  <mat-toolbar color="primary" class="main-toolbar">
+  <mat-toolbar color="accent" class="main-toolbar">
     <div class="toolbar-left">
       <button mat-icon-button (click)="toggleSidenav()" class="menu-button" aria-label="Toggle navigation menu">
         <mat-icon>menu</mat-icon>
@@ -13,6 +13,14 @@
       <ng-container *ngIf="!isLoggedIn">
         <button mat-button routerLink="/home" routerLinkActive="active">
           <mat-icon>home</mat-icon> Home
+        </button>
+        <button mat-button routerLink="/messaging" routerLinkActive="active">
+          <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null"
+                    matBadgeColor="warn"
+                    [matBadgeHidden]="unreadCount === 0">
+            message
+          </mat-icon>
+          Messages
         </button>
         <button mat-button routerLink="/login" routerLinkActive="active">
           <mat-icon>login</mat-icon> Login
@@ -34,10 +42,10 @@
         <button mat-button routerLink="/home" routerLinkActive="active">
           <mat-icon>home</mat-icon> Home
         </button>
-        <button mat-button routerLinkActive="active">
+        <button mat-button routerLink="/jobs"  routerLinkActive="active">
           <mat-icon>work</mat-icon> Jobs
         </button>
-        <button mat-button routerLinkActive="active">
+        <button mat-button routerLink="/messaging" routerLinkActive="active">
           <mat-icon>message</mat-icon> Messages
         </button>
         <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-button" aria-label="User menu">
@@ -99,7 +107,7 @@
           <a mat-list-item routerLink="/jobs" routerLinkActive="active">
             <mat-icon>work</mat-icon> Browse Jobs
           </a>
-          <a mat-list-item routerLink="/messages" routerLinkActive="active">
+          <a mat-list-item routerLink="/messaging" routerLinkActive="active">
             <mat-icon>message</mat-icon> Messages
           </a>
           <a mat-list-item routerLink="/profile" routerLinkActive="active">
@@ -117,6 +125,14 @@
         <ng-container *ngIf="!isLoggedIn">
           <a mat-list-item routerLink="/login" routerLinkActive="active">
             <mat-icon>login</mat-icon> Login
+          </a>
+          <a mat-list-item routerLink="/messaging" routerLinkActive="active">
+            <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null"
+                      matBadgeColor="warn"
+                      [matBadgeHidden]="unreadCount === 0">
+              message
+            </mat-icon>
+            Messages
           </a>
           <mat-expansion-panel class="mat-elevation-z0">
             <mat-expansion-panel-header>

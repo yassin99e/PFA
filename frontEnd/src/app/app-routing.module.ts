@@ -5,6 +5,12 @@ import {RegisterCandidateComponent} from './components/register-candidate/regist
 import {HomeComponent} from './components/home/home.component';
 import {LoginComponent} from './components/login/login.component';
 import {TemplateComponent} from './components/template/template.component';
+import {ChatComponent} from './components/messaging/chat/chat.component';
+import {NewConversationComponent} from './components/messaging/new-conversation/new-conversation.component';
+import {ConversationListComponent} from './components/messaging/conversation-list/conversation-list.component';
+import {JobsComponent} from './components/jobs/jobs.component';
+import {SettingsComponent} from './components/settings/settings.component';
+import {MyProfileComponent} from './components/my-profile/my-profile.component';
 
 
 const routes: Routes = [
@@ -17,6 +23,17 @@ const routes: Routes = [
       { path: 'home', component: HomeComponent },
       { path: 'register-candidate', component: RegisterCandidateComponent },
       { path: 'register-recruiter', component: RegisterRecruiterComponent },
+      {path: 'jobs', component: JobsComponent },
+      {path: 'settings', component: SettingsComponent },
+      {path: 'profile', component: MyProfileComponent },
+      {
+        path: 'messaging',
+        component: ConversationListComponent,
+        children: [
+          { path: 'new', component: NewConversationComponent },
+          { path: 'conversation/:id', component: ChatComponent }
+        ]
+      }
     ]
   }
 ];
