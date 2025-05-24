@@ -1,29 +1,20 @@
-package ma.ensa.usermicroservice.entities;
-
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
+package ma.ensa.resumeservice.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-
-@Entity
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class Candidate extends User {
-
+@NoArgsConstructor
+public class CandidateDTO {
+    private Long id;
+    private String email;
+    private String fullName;
     private String profile;
     private String diploma;
     private String phone;
     private int yearsOfExperience;
-
-    @ElementCollection
     private List<String> technologies;
-
-    @ElementCollection
     private List<String> interestedProfiles;
 }

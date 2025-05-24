@@ -1,4 +1,4 @@
-package com.jetbrains.resumeservice;
+package ma.ensa.resumeservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

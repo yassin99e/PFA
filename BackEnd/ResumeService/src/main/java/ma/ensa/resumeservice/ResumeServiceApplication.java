@@ -1,4 +1,4 @@
-package com.jetbrains.resumeservice;
+package ma.ensa.resumeservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
