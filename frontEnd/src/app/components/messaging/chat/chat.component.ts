@@ -22,6 +22,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   loading = true;
   error: string | null = null;
 
+  // Store the other participant's name
+  otherParticipantName: string = '';
+
   private newMessageSubscription?: Subscription;
 
   constructor(
@@ -85,6 +88,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: (conversation) => {
         this.conversation = conversation;
         this.messages = conversation.messages;
+
+        // Load the other participant's name
+        this.loadOtherParticipantName();
+
         this.loading = false;
 
         // Mark all messages as read
@@ -96,6 +103,30 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         console.error('Error loading conversation:', err);
         this.error = 'Failed to load conversation. Please try again.';
         this.loading = false;
+      }
+    });
+  }
+
+  private loadOtherParticipantName(): void {
+    if (!this.conversation) return;
+
+    const currentUser = this.userService.getCurrentUser();
+    if (!currentUser) return;
+
+    // Determine which participant is the other user
+    const otherUserId =
+      currentUser.id === this.conversation.participantOneId ?
+        this.conversation.participantTwoId :
+        this.conversation.participantOneId;
+
+    // Fetch the real name from the UserService
+    this.userService.getUserNameById(otherUserId).subscribe({
+      next: (name) => {
+        this.otherParticipantName = name;
+      },
+      error: (err) => {
+        console.error('Error loading participant name:', err);
+        this.otherParticipantName = `User ${otherUserId}`;
       }
     });
   }
@@ -163,20 +194,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
+  // Updated method to return the loaded name
   getOtherParticipantName(): string {
-    if (!this.conversation) return '';
-
-    const currentUser = this.userService.getCurrentUser();
-    if (!currentUser) return '';
-
-    // Determine which participant is the other user
-    const otherUserId =
-      currentUser.id === this.conversation.participantOneId ?
-        this.conversation.participantTwoId :
-        this.conversation.participantOneId;
-
-    // Placeholder - in real app, fetch from UserMicroService
-    return `User ${otherUserId}`;
+    return this.otherParticipantName || 'Loading...';
   }
 
   isOnline(): boolean {

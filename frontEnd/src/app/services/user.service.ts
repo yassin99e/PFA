@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap, BehaviorSubject } from 'rxjs';
+import { Observable, tap, BehaviorSubject, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 import { LoginDTO } from '../models/user-DTOS/login.dto';
 import { RecruiterDTO } from '../models/user-DTOS/recruiter.dto';
@@ -30,6 +31,9 @@ export class UserService {
 
   private loggedIn = false;
 
+  // Cache for user names to avoid repeated API calls
+  private userNameCache = new Map<number, string>();
+
   constructor(private http: HttpClient) {
     // Check if user data exists in localStorage on service initialization
     this.loadUserFromStorage();
@@ -54,6 +58,7 @@ export class UserService {
   logout(): void {
     this.loggedIn = false;
     this.currentUserSubject.next(null);
+    this.userNameCache.clear(); // Clear cache on logout
 
     // Clear stored data
     localStorage.removeItem('userData');
@@ -121,17 +126,57 @@ export class UserService {
     return this.http.post(`${API_URL}/recruiter/register`, recruiterData);
   }
 
-  // Add these methods to your existing UserService
+  // Get all candidates
   getAllCandidates(): Observable<any[]> {
     return this.http.get<any[]>(`${API_URL}/candidate/all`);
   }
 
+  // Get all recruiters
   getAllRecruiters(): Observable<any[]> {
     return this.http.get<any[]>(`${API_URL}/recruiter/all`);
   }
 
+  // Get user by ID
   getUserById(userId: number): Observable<UserData> {
     return this.http.get<UserData>(`${API_URL}/users/${userId}`);
   }
 
+  // NEW METHOD: Get user name by ID with caching
+  getUserNameById(userId: number): Observable<string> {
+    // Check cache first
+    if (this.userNameCache.has(userId)) {
+      return of(this.userNameCache.get(userId)!);
+    }
+
+    // If not in cache, fetch from API
+    return this.getUserById(userId).pipe(
+      map(user => {
+        const name = user.fullName || user.email.split('@')[0] || `User ${userId}`;
+        // Cache the result
+        this.userNameCache.set(userId, name);
+        return name;
+      }),
+      catchError(error => {
+        console.error(`Error fetching user ${userId}:`, error);
+        const fallbackName = `User ${userId}`;
+        // Cache the fallback name to avoid repeated failed requests
+        this.userNameCache.set(userId, fallbackName);
+        return of(fallbackName);
+      })
+    );
+  }
+
+  // NEW METHOD: Preload user names for better performance
+  preloadUserNames(userIds: number[]): void {
+    const uncachedIds = userIds.filter(id => !this.userNameCache.has(id));
+
+    uncachedIds.forEach(userId => {
+      this.getUserNameById(userId).subscribe(); // This will cache the names
+    });
+  }
+
+  // NEW METHOD: Clear user cache (useful for refresh)
+  clearUserCache(): void {
+    this.userNameCache.clear();
+  }
 }

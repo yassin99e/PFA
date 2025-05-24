@@ -3,6 +3,11 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagingService, Conversation } from '../../../services/messaging.service';
 import { UserService } from '../../../services/user.service';
+import { forkJoin } from 'rxjs';
+
+interface ConversationWithName extends Conversation {
+  otherParticipantName?: string;
+}
 
 @Component({
   selector: 'app-conversation-list',
@@ -11,7 +16,7 @@ import { UserService } from '../../../services/user.service';
   standalone: false
 })
 export class ConversationListComponent implements OnInit {
-  conversations: Conversation[] = [];
+  conversations: ConversationWithName[] = [];
   loading = true;
   error: string | null = null;
 
@@ -45,7 +50,8 @@ export class ConversationListComponent implements OnInit {
       .subscribe({
         next: (data) => {
           this.conversations = data;
-          this.loading = false;
+          // Load participant names for all conversations
+          this.loadParticipantNames(currentUser.id);
         },
         error: (err) => {
           console.error('Error loading conversations:', err);
@@ -53,6 +59,52 @@ export class ConversationListComponent implements OnInit {
           this.loading = false;
         }
       });
+  }
+
+  private loadParticipantNames(currentUserId: number): void {
+    if (this.conversations.length === 0) {
+      this.loading = false;
+      return;
+    }
+
+    // Get all unique other participant IDs
+    const otherParticipantIds = this.conversations.map(conversation => {
+      return currentUserId === conversation.participantOneId ?
+        conversation.participantTwoId :
+        conversation.participantOneId;
+    });
+
+    // Remove duplicates
+    const uniqueIds = [...new Set(otherParticipantIds)];
+
+    // Preload all user names to cache them
+    this.userService.preloadUserNames(uniqueIds);
+
+    // Create observables for all name requests
+    const nameRequests = this.conversations.map((conversation, index) => {
+      const otherUserId = otherParticipantIds[index];
+      return this.userService.getUserNameById(otherUserId);
+    });
+
+    // Execute all requests in parallel
+    forkJoin(nameRequests).subscribe({
+      next: (names) => {
+        // Assign names to conversations
+        this.conversations.forEach((conversation, index) => {
+          conversation.otherParticipantName = names[index];
+        });
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading participant names:', err);
+        // Fallback to User IDs if name loading fails
+        this.conversations.forEach((conversation, index) => {
+          const otherUserId = otherParticipantIds[index];
+          conversation.otherParticipantName = `User ${otherUserId}`;
+        });
+        this.loading = false;
+      }
+    });
   }
 
   openConversation(conversationId: number): void {
@@ -74,19 +126,8 @@ export class ConversationListComponent implements OnInit {
     return currentUser !== null && currentUser.role === 'RECRUITER';
   }
 
-  getOtherParticipantName(conversation: Conversation): string {
-    const currentUser = this.userService.getCurrentUser();
-    if (!currentUser) return '';
-
-    // Determine which participant is the other user
-    const otherUserId =
-      currentUser.id === conversation.participantOneId ?
-        conversation.participantTwoId :
-        conversation.participantOneId;
-
-    // Would typically fetch name from UserMicroService, but for simplicity
-    // we'll return a placeholder. In a real app, you'd cache user info
-    return `User ${otherUserId}`;
+  getOtherParticipantName(conversation: ConversationWithName): string {
+    return conversation.otherParticipantName || 'Loading...';
   }
 
   getLastMessage(conversation: Conversation): string {
