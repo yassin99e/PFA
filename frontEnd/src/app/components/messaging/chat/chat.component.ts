@@ -61,17 +61,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
+  // Replace your setupMessageSubscriptions method in chat.component.ts:
+
   private setupMessageSubscriptions(): void {
     // Subscribe to new messages
     this.newMessageSubscription = this.messagingService.newMessage$.subscribe(
       message => {
         if (message && message.conversationId === this.conversationId) {
-          console.log('Received new message in chat:', message);
+          console.log('✅ Received new message in chat:', message);
 
           // Check if message already exists to avoid duplicates
           const existingMessage = this.messages.find(m => m.id === message.id);
           if (!existingMessage) {
             this.messages.push(message);
+            this.sortMessages();
             this.markAsRead(message);
             setTimeout(() => this.scrollToBottom(), 100);
           }
@@ -83,7 +86,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.readReceiptSubscription = this.messagingService.readReceipt$.subscribe(
       receipt => {
         if (receipt && receipt.messageId) {
-          // Update message read status in local array
           const message = this.messages.find(m => m.id === receipt.messageId);
           if (message) {
             message.isRead = receipt.isRead;
@@ -91,6 +93,45 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
       }
     );
+  }
+
+// Add this helper method:
+  private sortMessages(): void {
+    this.messages.sort((a, b) => {
+      const dateA = new Date(a.timestamp || 0);
+      const dateB = new Date(b.timestamp || 0);
+      return dateA.getTime() - dateB.getTime();
+    });
+  }
+
+// Replace your sendMessage method:
+  sendMessage(): void {
+    if (!this.messageContent.value || !this.conversationId) {
+      return;
+    }
+
+    const currentUser = this.userService.getCurrentUser();
+    if (!currentUser) return;
+
+    const newMessage: Message = {
+      conversationId: this.conversationId,
+      senderId: currentUser.id,
+      content: this.messageContent.value,
+      senderRole: currentUser.role,
+      timestamp: new Date(),
+      isRead: false
+    };
+
+    this.messagingService.sendMessage(newMessage).subscribe({
+      next: () => {
+        this.messageContent.reset();
+        setTimeout(() => this.scrollToBottom(), 100);
+      },
+      error: (err) => {
+        console.error('Error sending message:', err);
+        this.error = 'Failed to send message. Please try again.';
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -212,42 +253,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  // Update the sendMessage method in your chat.component.ts
-
-  sendMessage(): void {
-    if (!this.messageContent.value || !this.conversationId) {
-      return;
-    }
-
-    const currentUser = this.userService.getCurrentUser();
-    if (!currentUser) return;
-
-    const newMessage: Message = {
-      conversationId: this.conversationId,
-      senderId: currentUser.id,
-      content: this.messageContent.value,
-      senderRole: currentUser.role,
-      timestamp: new Date(),
-      isRead: false
-    };
-
-    console.log('Sending message:', newMessage);
-
-    this.messagingService.sendMessage(newMessage).subscribe({
-      next: (sentMessage) => {
-        // IMPORTANT: Don't add message to local array here
-        // Let the WebSocket subscription handle it
-        console.log('Message sent successfully, waiting for WebSocket response');
-
-        this.messageContent.reset();
-        setTimeout(() => this.scrollToBottom(), 100);
-      },
-      error: (err) => {
-        console.error('Error sending message:', err);
-        this.error = 'Failed to send message. Please try again.';
-      }
-    });
-  }
 
   // Updated method to return the loaded name
   getOtherParticipantName(): string {

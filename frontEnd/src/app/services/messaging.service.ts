@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import {map} from 'rxjs/operators';
 
 const API_URL = 'http://localhost:8080/MESSAGINGSERVICE/api';
 const WS_URL = 'http://localhost:8082/ws';
@@ -46,7 +47,8 @@ export class MessagingService {
 
   constructor(private http: HttpClient) { }
 
-  // Connect to WebSocket server
+  // Replace your connect method in messaging.service.ts:
+
   public connect(userId: number): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.isConnected && this.currentUserId === userId) {
@@ -70,23 +72,30 @@ export class MessagingService {
         console.log('WebSocket Connected for user:', userId);
         this.isConnected = true;
 
-        // Subscribe to personal messages
-        this.stompClient?.subscribe('/user/' + userId + '/queue/messages', message => {
-          console.log('Received message:', message.body);
-          const receivedMessage = JSON.parse(message.body) as Message;
-          // Convert timestamp string to Date object
-          if (receivedMessage.timestamp) {
-            receivedMessage.timestamp = new Date(receivedMessage.timestamp);
-          }
-          this.newMessageSubject.next(receivedMessage);
+        // Subscribe to conversation topics (this is the key change)
+        // We'll subscribe to all conversation topics for now
+        this.stompClient?.subscribe('/topic/conversation/*', message => {
+          console.log('📢 Topic message received:', message.body);
 
-          // Update unread count only if this message is for current user
-          if (receivedMessage.receiverId === userId) {
-            this.updateUnreadCount(1);
+          try {
+            const receivedMessage = JSON.parse(message.body) as Message;
+
+            if (receivedMessage.timestamp) {
+              receivedMessage.timestamp = new Date(receivedMessage.timestamp);
+            }
+
+            // Emit message to subscribers
+            this.newMessageSubject.next(receivedMessage);
+
+            if (receivedMessage.receiverId === userId) {
+              this.updateUnreadCount(1);
+            }
+          } catch (error) {
+            console.error('Error parsing topic message:', error);
           }
         });
 
-        // Subscribe to read receipts
+        // Keep the user-specific subscriptions for read receipts
         this.stompClient?.subscribe('/user/' + userId + '/queue/read-receipt', receipt => {
           console.log('Received read receipt:', receipt.body);
           const readData = JSON.parse(receipt.body);
@@ -119,6 +128,33 @@ export class MessagingService {
     });
   }
 
+// Replace your sendMessage method:
+  public sendMessage(message: Message): Observable<Message> {
+    if (this.isWebSocketConnected()) {
+      // Get conversation to determine receiver
+      return this.getConversation(message.conversationId).pipe(
+        tap(conversation => {
+          const receiverId = this.currentUserId === conversation.participantOneId ?
+            conversation.participantTwoId : conversation.participantOneId;
+
+          const messageToSend = { ...message, receiverId };
+
+          this.stompClient?.publish({
+            destination: '/app/chat.sendMessage',
+            body: JSON.stringify(messageToSend)
+          });
+        })
+      ).pipe(
+        // Return original message immediately
+        map(() => message)
+      );
+    } else {
+      // Fallback to REST API
+      return this.http.post<Message>(`${API_URL}/messages`, message);
+    }
+  }
+
+
   // Disconnect from WebSocket server
   public disconnect(): void {
     if (this.stompClient && this.isConnected) {
@@ -133,35 +169,6 @@ export class MessagingService {
     return this.isConnected && this.stompClient?.connected === true;
   }
 
-  // Send a message
-  public sendMessage(message: Message): Observable<Message> {
-    // Always try WebSocket first if connected
-    if (this.isWebSocketConnected()) {
-      console.log('Sending message via WebSocket:', message);
-
-      // Determine receiver ID based on conversation participants
-      this.getConversation(message.conversationId).subscribe(conversation => {
-        const receiverId = this.currentUserId === conversation.participantOneId ?
-          conversation.participantTwoId : conversation.participantOneId;
-
-        const messageToSend = { ...message, receiverId };
-
-        this.stompClient?.publish({
-          destination: '/app/chat.sendMessage',
-          body: JSON.stringify(messageToSend)
-        });
-      });
-
-      return new Observable(observer => {
-        observer.next(message);
-        observer.complete();
-      });
-    } else {
-      // Fallback to REST API
-      console.log('Sending message via REST API:', message);
-      return this.http.post<Message>(`${API_URL}/messages`, message);
-    }
-  }
 
   // Mark message as read
   public markAsRead(messageId: number): Observable<void> {

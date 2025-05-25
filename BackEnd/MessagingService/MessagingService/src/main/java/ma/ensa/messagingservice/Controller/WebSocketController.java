@@ -31,53 +31,46 @@ public class WebSocketController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload MessageDTO messageDTO) {
         try {
-            System.out.println("Received WebSocket message: " + messageDTO.getContent());
+            System.out.println("=== Received WebSocket Message ===");
+            System.out.println("Content: " + messageDTO.getContent());
+            System.out.println("From: " + messageDTO.getSenderId());
+            System.out.println("Conversation: " + messageDTO.getConversationId());
 
-            // Convert DTO to Entity
+            // Find conversation
+            Conversation conversation = conversationRepository.findById(messageDTO.getConversationId())
+                    .orElseThrow(() -> new RuntimeException("Conversation not found"));
+
+            // Create message entity
             Message message = new Message();
             message.setSenderId(messageDTO.getSenderId());
             message.setContent(messageDTO.getContent());
             message.setSenderRole(Role.valueOf(messageDTO.getSenderRole()));
             message.setTimestamp(LocalDateTime.now());
             message.setRead(false);
-
-            // Find and set the conversation
-            Conversation conversation = conversationRepository.findById(messageDTO.getConversationId())
-                    .orElseThrow(() -> new RuntimeException("Conversation not found"));
             message.setConversation(conversation);
 
-            // Determine receiver ID
+            // Set receiver ID
             Long receiverId = messageDTO.getSenderId().equals(conversation.getParticipantOneId())
                     ? conversation.getParticipantTwoId()
                     : conversation.getParticipantOneId();
             message.setReceiverId(receiverId);
 
-            // Save message to database
+            // Save to database
             Message savedMessage = messageRepository.save(message);
-            System.out.println("Message saved to database with ID: " + savedMessage.getId());
+            System.out.println("Message saved with ID: " + savedMessage.getId());
 
-            // Convert back to DTO for broadcasting
+            // Convert to DTO
             MessageDTO responseDTO = convertToDTO(savedMessage);
 
-            // CRITICAL: Broadcast to BOTH participants
-            System.out.println("Broadcasting to participant 1: " + conversation.getParticipantOneId());
-            messagingTemplate.convertAndSendToUser(
-                    String.valueOf(conversation.getParticipantOneId()),
-                    "/queue/messages",
-                    responseDTO
-            );
+            // BROADCAST TO TOPIC INSTEAD OF USER QUEUES
+            String topicDestination = "/topic/conversation/" + messageDTO.getConversationId();
+            System.out.println("Broadcasting to topic: " + topicDestination);
 
-            System.out.println("Broadcasting to participant 2: " + conversation.getParticipantTwoId());
-            messagingTemplate.convertAndSendToUser(
-                    String.valueOf(conversation.getParticipantTwoId()),
-                    "/queue/messages",
-                    responseDTO
-            );
-
-            System.out.println("Message broadcast completed: " + responseDTO.getContent());
+            messagingTemplate.convertAndSend(topicDestination, responseDTO);
+            System.out.println("✅ Message broadcast to topic completed");
 
         } catch (Exception e) {
-            System.err.println("Error in sendMessage: " + e.getMessage());
+            System.err.println("❌ Error in sendMessage: " + e.getMessage());
             e.printStackTrace();
         }
     }
