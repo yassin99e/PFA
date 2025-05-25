@@ -26,6 +26,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   otherParticipantName: string = '';
 
   private newMessageSubscription?: Subscription;
+  private readReceiptSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,7 +34,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private userService: UserService
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    // Get conversation ID from route
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -42,29 +44,64 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     });
 
+    // Connect to WebSocket first
+    const currentUser = this.userService.getCurrentUser();
+    if (currentUser) {
+      try {
+        await this.messagingService.connect(currentUser.id);
+        console.log('WebSocket connected successfully');
+
+        // Subscribe to new messages after connection
+        this.setupMessageSubscriptions();
+      } catch (error) {
+        console.error('Failed to connect to WebSocket:', error);
+        // Continue without WebSocket - will use REST API as fallback
+        this.setupMessageSubscriptions();
+      }
+    }
+  }
+
+  private setupMessageSubscriptions(): void {
     // Subscribe to new messages
     this.newMessageSubscription = this.messagingService.newMessage$.subscribe(
       message => {
         if (message && message.conversationId === this.conversationId) {
-          this.messages.push(message);
-          this.markAsRead(message);
-          this.scrollToBottom();
+          console.log('Received new message in chat:', message);
+
+          // Check if message already exists to avoid duplicates
+          const existingMessage = this.messages.find(m => m.id === message.id);
+          if (!existingMessage) {
+            this.messages.push(message);
+            this.markAsRead(message);
+            setTimeout(() => this.scrollToBottom(), 100);
+          }
         }
       }
     );
 
-    // Connect to WebSocket
-    const currentUser = this.userService.getCurrentUser();
-    if (currentUser) {
-      this.messagingService.connect(currentUser.id);
-    }
+    // Subscribe to read receipts
+    this.readReceiptSubscription = this.messagingService.readReceipt$.subscribe(
+      receipt => {
+        if (receipt && receipt.messageId) {
+          // Update message read status in local array
+          const message = this.messages.find(m => m.id === receipt.messageId);
+          if (message) {
+            message.isRead = receipt.isRead;
+          }
+        }
+      }
+    );
   }
 
   ngOnDestroy(): void {
     if (this.newMessageSubscription) {
       this.newMessageSubscription.unsubscribe();
     }
-    this.messagingService.disconnect();
+    if (this.readReceiptSubscription) {
+      this.readReceiptSubscription.unsubscribe();
+    }
+    // Don't disconnect here if other components might use WebSocket
+    // this.messagingService.disconnect();
   }
 
   ngAfterViewChecked(): void {
@@ -87,7 +124,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messagingService.getConversation(this.conversationId).subscribe({
       next: (conversation) => {
         this.conversation = conversation;
-        this.messages = conversation.messages;
+        this.messages = conversation.messages || [];
+
+        // Sort messages by timestamp
+        this.messages.sort((a, b) => {
+          const dateA = new Date(a.timestamp || 0);
+          const dateB = new Date(b.timestamp || 0);
+          return dateA.getTime() - dateB.getTime();
+        });
 
         // Load the other participant's name
         this.loadOtherParticipantName();
@@ -156,15 +200,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
 
-    this.messagingService.markAsRead(message.id!).subscribe({
-      next: () => {
-        message.isRead = true;
-      },
-      error: (err) => {
-        console.error('Error marking message as read:', err);
-      }
-    });
+    if (message.id) {
+      this.messagingService.markAsRead(message.id).subscribe({
+        next: () => {
+          message.isRead = true;
+        },
+        error: (err) => {
+          console.error('Error marking message as read:', err);
+        }
+      });
+    }
   }
+
+  // Update the sendMessage method in your chat.component.ts
 
   sendMessage(): void {
     if (!this.messageContent.value || !this.conversationId) {
@@ -178,12 +226,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       conversationId: this.conversationId,
       senderId: currentUser.id,
       content: this.messageContent.value,
-      senderRole: currentUser.role
+      senderRole: currentUser.role,
+      timestamp: new Date(),
+      isRead: false
     };
+
+    console.log('Sending message:', newMessage);
 
     this.messagingService.sendMessage(newMessage).subscribe({
       next: (sentMessage) => {
-        this.messages.push(sentMessage);
+        // IMPORTANT: Don't add message to local array here
+        // Let the WebSocket subscription handle it
+        console.log('Message sent successfully, waiting for WebSocket response');
+
         this.messageContent.reset();
         setTimeout(() => this.scrollToBottom(), 100);
       },
@@ -239,5 +294,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     return date.toLocaleDateString([], {
       year: '2-digit', month: 'short', day: 'numeric'
     });
+  }
+
+  // Method to refresh conversation if needed
+  refreshConversation(): void {
+    this.loadConversation();
   }
 }

@@ -1,9 +1,9 @@
 // src/app/components/messaging/conversation-list/conversation-list.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessagingService, Conversation } from '../../../services/messaging.service';
 import { UserService } from '../../../services/user.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
 interface ConversationWithName extends Conversation {
   otherParticipantName?: string;
@@ -15,26 +15,38 @@ interface ConversationWithName extends Conversation {
   styleUrls: ['./conversation-list.component.css'],
   standalone: false
 })
-export class ConversationListComponent implements OnInit {
+export class ConversationListComponent implements OnInit, OnDestroy {
   conversations: ConversationWithName[] = [];
   loading = true;
   error: string | null = null;
 
+  private newMessageSubscription?: Subscription;
+
   constructor(
     private messagingService: MessagingService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef // Add ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadConversations();
 
     // Subscribe to new messages to update list
-    this.messagingService.newMessage$.subscribe(message => {
+    this.newMessageSubscription = this.messagingService.newMessage$.subscribe(message => {
       if (message) {
-        this.loadConversations();
+        // Use setTimeout to avoid change detection errors
+        setTimeout(() => {
+          this.loadConversations();
+        }, 0);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.newMessageSubscription) {
+      this.newMessageSubscription.unsubscribe();
+    }
   }
 
   protected loadConversations(): void {
@@ -57,6 +69,7 @@ export class ConversationListComponent implements OnInit {
           console.error('Error loading conversations:', err);
           this.error = 'Failed to load conversations. Please try again.';
           this.loading = false;
+          this.cdr.detectChanges(); // Manually trigger change detection
         }
       });
   }
@@ -64,6 +77,7 @@ export class ConversationListComponent implements OnInit {
   private loadParticipantNames(currentUserId: number): void {
     if (this.conversations.length === 0) {
       this.loading = false;
+      this.cdr.detectChanges(); // Manually trigger change detection
       return;
     }
 
@@ -94,6 +108,7 @@ export class ConversationListComponent implements OnInit {
           conversation.otherParticipantName = names[index];
         });
         this.loading = false;
+        this.cdr.detectChanges(); // Manually trigger change detection
       },
       error: (err) => {
         console.error('Error loading participant names:', err);
@@ -103,6 +118,7 @@ export class ConversationListComponent implements OnInit {
           conversation.otherParticipantName = `User ${otherUserId}`;
         });
         this.loading = false;
+        this.cdr.detectChanges(); // Manually trigger change detection
       }
     });
   }
@@ -150,6 +166,7 @@ export class ConversationListComponent implements OnInit {
     return new Date(lastMessage.timestamp!).toLocaleString();
   }
 
+  // Fix for change detection error - use getter methods
   hasUnreadMessages(conversation: Conversation): boolean {
     const currentUser = this.userService.getCurrentUser();
     if (!currentUser || !conversation.messages) return false;
@@ -168,8 +185,24 @@ export class ConversationListComponent implements OnInit {
     ).length;
   }
 
+  // Cache the online status to avoid repeated random calls
+  private onlineStatusCache = new Map<number, boolean>();
+
   isUserOnline(conversation: Conversation): boolean {
-    // Placeholder - in real app, would check with user status service
-    return Math.random() > 0.5; // Random for demo purposes
+    const currentUser = this.userService.getCurrentUser();
+    if (!currentUser) return false;
+
+    const otherUserId = currentUser.id === conversation.participantOneId ?
+      conversation.participantTwoId : conversation.participantOneId;
+
+    // Return cached status if available
+    if (this.onlineStatusCache.has(otherUserId)) {
+      return this.onlineStatusCache.get(otherUserId)!;
+    }
+
+    // Generate random status and cache it
+    const isOnline = Math.random() > 0.5;
+    this.onlineStatusCache.set(otherUserId, isOnline);
+    return isOnline;
   }
 }

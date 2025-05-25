@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-settings',
+  selector: 'app-my-profile',
   standalone: false,
   template: `
     <div class="profile-container">

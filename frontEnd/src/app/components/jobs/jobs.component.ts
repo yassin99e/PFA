@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-settings',
+  selector: 'app-jobs',
   standalone: false,
   template: `
     <div class="profile-container">
@@ -20,4 +20,3 @@ import { Component } from '@angular/core';
 export class JobsComponent {
 
 }
-

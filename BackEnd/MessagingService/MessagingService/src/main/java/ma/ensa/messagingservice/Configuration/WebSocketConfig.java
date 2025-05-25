@@ -1,3 +1,4 @@
+// BackEnd/MessagingService/MessagingService/src/main/java/ma/ensa/messagingservice/Configuration/WebSocketConfig.java
 package ma.ensa.messagingservice.Configuration;
 
 import org.springframework.context.annotation.Configuration;
@@ -12,19 +13,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Topic prefix for broadcasting messages
+        // Enable simple broker for sending messages to clients
         config.enableSimpleBroker("/topic", "/queue");
-        // Prefix for application endpoints
+
+        // Set prefix for messages from client to server
         config.setApplicationDestinationPrefixes("/app");
-        // User-specific destinations
+
+        // Set prefix for user-specific messages
         config.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Endpoint for WebSocket connection
+        // Add CORS back since we're connecting directly now
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOrigins("http://localhost:4200")
                 .withSockJS();
     }
 }
