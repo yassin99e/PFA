@@ -1,4 +1,4 @@
-package ma.ensa.resumeservice.services;
+package ma.ensa.resumeservice.services.user;
 import ma.ensa.resumeservice.dtos.CandidateDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

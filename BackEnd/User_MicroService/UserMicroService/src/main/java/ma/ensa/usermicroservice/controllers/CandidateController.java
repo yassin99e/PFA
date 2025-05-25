@@ -55,4 +55,13 @@ public class CandidateController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create Candidate: " + e.getMessage());
         }
     }
+    @GetMapping("/exists/{id}")
+    public ResponseEntity<Boolean> checkCandidateExists(@PathVariable Long id) {
+        try {
+            candidateService.getCandidateById(id); // This will throw exception if not found
+            return ResponseEntity.ok(true);
+        } catch (RuntimeException e) {
+            return ResponseEntity.ok(false);
+        }
+    }
 }

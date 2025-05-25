@@ -1,4 +1,4 @@
-package ma.ensa.resumeservice.services;
+package ma.ensa.resumeservice.services.resume;
 
 import ma.ensa.resumeservice.dtos.ResumeDTO;
 import ma.ensa.resumeservice.dtos.ResumeUploadDTO;
@@ -9,7 +9,7 @@ import java.util.List;
 public interface ResumeService {
     ResumeDTO uploadResume(ResumeUploadDTO resumeUploadDTO, MultipartFile file) throws IOException;
 
-    /*ResumeDTO getResumeById(Long id);
+    ResumeDTO getResumeById(Long id);
 
     List<ResumeDTO> getResumesByCandidateId(Long candidateId);
 
@@ -19,5 +19,5 @@ public interface ResumeService {
 
     ResumeDTO updateResume(Long id, ResumeUploadDTO resumeUploadDTO, MultipartFile file) throws IOException;
 
-    boolean checkResumeExists(Long candidateId, Long applicationId);*/
+    boolean checkResumeExists(Long candidateId, Long applicationId);
 }

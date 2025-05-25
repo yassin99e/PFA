@@ -1,10 +1,11 @@
-// entities/Resume.java
 package ma.ensa.resumeservice.entities;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -46,7 +47,9 @@ public class Resume {
             joinColumns = @JoinColumn(name = "resume_id"))
     private List<String> extractedSkills = new ArrayList<>();
 
-    @Column(columnDefinition = "jsonb")
+    // FIX: Use proper JSONB handling for PostgreSQL
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "parsed_data", columnDefinition = "jsonb")
     private String parsedData;
 
     private LocalDateTime uploadedAt;
