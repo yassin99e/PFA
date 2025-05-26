@@ -10,6 +10,7 @@
         <module name="Api_Gateway" />
         <module name="ResumeService" />
         <module name="Service_Discovery" />
+        <module name="JobService" />
       </profile>
       <profile name="Annotation profile for UserMicroService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -36,6 +37,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="AI_Matching" options="-parameters" />
       <module name="Api_Gateway" options="-parameters" />
+      <module name="JobService" options="-parameters" />
       <module name="MessagingService" options="-parameters" />
       <module name="ResumeService" options="-parameters" />
       <module name="Service_Discovery" options="-parameters" />

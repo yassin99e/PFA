@@ -2,11 +2,10 @@ package ma.ensa.usermicroservice.services;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import ma.ensa.usermicroservice.dtos.*;
-import ma.ensa.usermicroservice.entities.Candidate;
 import ma.ensa.usermicroservice.entities.Recruiter;
 import ma.ensa.usermicroservice.entities.Role;
-import ma.ensa.usermicroservice.entities.User;
 import ma.ensa.usermicroservice.repositories.RecruiterRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RecruiterService {
 
     private final RecruiterRepository recruiterRepository;
@@ -35,10 +35,19 @@ public class RecruiterService {
         return modelMapper.map(recruiter, RecruiterResponseDTO.class);
     }
 
-    public void save(RecruiterRequestDTO recruiter) {
-        Recruiter rec = modelMapper.map(recruiter, Recruiter.class);
-        rec.setRole(Role.RECRUITER);
-        recruiterRepository.save(rec);
+    public RecruiterResponseDTO save(RecruiterRequestDTO recruiterRequest) {
+        log.info("Creating recruiter: {}", recruiterRequest.getEmail());
+
+        Recruiter recruiter = modelMapper.map(recruiterRequest, Recruiter.class);
+        recruiter.setRole(Role.RECRUITER);
+
+        // Save and get the entity with generated ID
+        Recruiter savedRecruiter = recruiterRepository.save(recruiter);
+
+        log.info("Recruiter created with ID: {}", savedRecruiter.getId());
+
+        // Return the DTO with the ID
+        return modelMapper.map(savedRecruiter, RecruiterResponseDTO.class);
     }
     public void update(Long id, RecruiterRequestDTO request) {
         Recruiter recruiter = recruiterRepository.findById(id)

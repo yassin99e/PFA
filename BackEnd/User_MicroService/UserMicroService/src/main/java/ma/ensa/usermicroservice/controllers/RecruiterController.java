@@ -33,13 +33,12 @@ public class RecruiterController {
 
 
     // // Need to adjustments : change based on what the user send
+
     @PostMapping("/register")
-    public ResponseEntity<String> createRecruiter(
-            @RequestBody RecruiterRequestDTO recruiterRequestDTO
-    ) {
+    public ResponseEntity<?> createRecruiter(@RequestBody RecruiterRequestDTO recruiterRequestDTO) {
         try {
-            recruiterService.save(recruiterRequestDTO);  // Fixed: Pass the object, not class name
-            return ResponseEntity.status(HttpStatus.CREATED).body("Recruiter created successfully.");
+            RecruiterResponseDTO createdRecruiter = recruiterService.save(recruiterRequestDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdRecruiter);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create recruiter: " + e.getMessage());
         }
@@ -56,6 +55,15 @@ public class RecruiterController {
             return ResponseEntity.status(HttpStatus.OK).body("Recruiter updated successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create recruiter: " + e.getMessage());
+        }
+    }
+    @GetMapping("/exists/{id}")
+    public ResponseEntity<Boolean> checkRecruiterExists(@PathVariable("id") Long id) {
+        try {
+            recruiterService.getRecruiterById(id);
+            return ResponseEntity.ok(true);
+        } catch (Exception e) {
+            return ResponseEntity.ok(false);
         }
     }
 
