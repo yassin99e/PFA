@@ -1,0 +1,273 @@
+.profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.profile-header h1 {
+  color: #3f51b5;
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.profile-actions button {
+  border-radius: 24px;
+  padding: 8px 20px;
+  font-weight: 500;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  text-align: center;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.role-badge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.role-badge mat-chip {
+  font-size: 1rem;
+  padding: 12px 20px;
+  font-weight: 600;
+}
+
+.role-badge mat-icon {
+  margin-right: 8px;
+}
+
+.success-message {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 4px solid #4caf50;
+}
+
+.error-message {
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: #ffebee;
+  color: #d32f2f;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 4px solid #f44336;
+}
+
+.profile-section {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.profile-section:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.profile-section mat-card-header {
+  background: linear-gradient(135deg, rgba(63, 81, 181, 0.08) 0%, rgba(63, 81, 181, 0.03) 100%);
+  border-radius: 12px 12px 0 0;
+  padding: 20px 24px;
+}
+
+.profile-section mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #3f51b5;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.profile-section mat-card-content {
+  padding: 24px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  flex: 1;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chips-container mat-chip {
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+/* Form field styling */
+.mat-form-field {
+  font-size: 1rem;
+}
+
+.mat-form-field.mat-focused .mat-form-field-outline-thick {
+  color: #3f51b5;
+}
+
+.mat-form-field-outline-start,
+.mat-form-field-outline-gap,
+.mat-form-field-outline-end {
+  border-color: rgba(0, 0, 0, 0.23);
+}
+
+.mat-form-field:hover .mat-form-field-outline-start,
+.mat-form-field:hover .mat-form-field-outline-gap,
+.mat-form-field:hover .mat-form-field-outline-end {
+  border-color: rgba(0, 0, 0, 0.87);
+}
+
+/* Read-only field styling */
+.mat-form-field input[readonly] {
+  color: rgba(0, 0, 0, 0.87);
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 16px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .profile-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .profile-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .half-width {
+    width: 100%;
+  }
+
+  .profile-section mat-card-header,
+  .profile-section mat-card-content {
+    padding: 16px;
+  }
+
+  .chips-container {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .profile-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .profile-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .role-badge mat-chip {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+  }
+}
+
+/* Animation for profile sections */
+.profile-section {
+  animation: slideInUp 0.5s ease-out forwards;
+}
+
+.profile-section:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.profile-section:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.profile-section:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover effects for interactive elements */
+.profile-actions button {
+  transition: all 0.3s ease;
+}
+
+.profile-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
+}

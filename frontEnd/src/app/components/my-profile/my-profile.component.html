@@ -1,1 +1,195 @@
-<p>my-profile works!</p>
+<div class="profile-container">
+  <div class="profile-header">
+    <h1>My Profile</h1>
+    <div class="profile-actions" *ngIf="!loading">
+      <button mat-raised-button color="primary" (click)="toggleEdit()" *ngIf="!isEditing">
+        <mat-icon>edit</mat-icon> Edit Profile
+      </button>
+      <button mat-raised-button color="primary" (click)="saveProfile()" *ngIf="isEditing" [disabled]="loading">
+        <mat-icon>save</mat-icon> Save Changes
+      </button>
+      <button mat-button (click)="cancelEdit()" *ngIf="isEditing">
+        <mat-icon>cancel</mat-icon> Cancel
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading profile...</p>
+  </div>
+
+  <div *ngIf="!loading && currentUser" class="profile-content">
+    <!-- User Role Badge -->
+    <div class="role-badge">
+      <mat-chip color="primary" selected>
+        <mat-icon>{{ isCandidate() ? 'badge' : 'business' }}</mat-icon>
+        {{ currentUser.role | titlecase }}
+      </mat-chip>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div *ngIf="successMessage" class="success-message">
+      <mat-icon>check_circle</mat-icon> {{ successMessage }}
+    </div>
+    <div *ngIf="errorMessage" class="error-message">
+      <mat-icon>error</mat-icon> {{ errorMessage }}
+    </div>
+
+    <!-- Basic Information Section -->
+    <mat-card class="profile-section">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>person</mat-icon> Basic Information
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input matInput [(ngModel)]="profileData.fullName" [readonly]="!isEditing">
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [(ngModel)]="profileData.email" [readonly]="!isEditing">
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row" *ngIf="isEditing">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput
+                   [type]="hidePassword ? 'password' : 'text'"
+                   [(ngModel)]="profileData.password"
+                   placeholder="Leave blank to keep current password">
+            <mat-icon matPrefix>lock</mat-icon>
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Candidate Specific Information -->
+    <div *ngIf="isCandidate()">
+      <!-- Professional Information -->
+      <mat-card class="profile-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>work</mat-icon> Professional Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Profile</mat-label>
+              <input matInput [(ngModel)]="profileData.profile" [readonly]="!isEditing">
+              <mat-icon matPrefix>work</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Years of Experience</mat-label>
+              <input matInput type="number" [(ngModel)]="profileData.yearsOfExperience" [readonly]="!isEditing">
+              <mat-icon matPrefix>timeline</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Diploma</mat-label>
+              <input matInput [(ngModel)]="profileData.diploma" [readonly]="!isEditing">
+              <mat-icon matPrefix>school</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Phone</mat-label>
+              <input matInput [(ngModel)]="profileData.phone" [readonly]="!isEditing">
+              <mat-icon matPrefix>phone</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Technologies</mat-label>
+              <input matInput [(ngModel)]="technologiesInput" [readonly]="!isEditing">
+              <mat-icon matPrefix>code</mat-icon>
+              <mat-hint *ngIf="isEditing">Separate with commas (e.g., Angular, React, Node.js)</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Interested Profiles</mat-label>
+              <input matInput [(ngModel)]="interestedProfilesInput" [readonly]="!isEditing">
+              <mat-icon matPrefix>interests</mat-icon>
+              <mat-hint *ngIf="isEditing">Separate with commas (e.g., Frontend Developer, UX Designer)</mat-hint>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Skills Display (Read-only view) -->
+      <mat-card class="profile-section" *ngIf="!isEditing && profileData.technologies?.length > 0">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>code</mat-icon> Technologies
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chips-container">
+            <mat-chip *ngFor="let tech of profileData.technologies" color="primary">
+              {{ tech }}
+            </mat-chip>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="profile-section" *ngIf="!isEditing && profileData.interestedProfiles?.length > 0">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>interests</mat-icon> Interested Profiles
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chips-container">
+            <mat-chip *ngFor="let profile of profileData.interestedProfiles" color="accent">
+              {{ profile }}
+            </mat-chip>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Recruiter Specific Information -->
+    <div *ngIf="isRecruiter()">
+      <mat-card class="profile-section">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>business</mat-icon> Company Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Company</mat-label>
+              <input matInput [(ngModel)]="profileData.company" [readonly]="!isEditing">
+              <mat-icon matPrefix>business</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="half-width">
+              <mat-label>Department</mat-label>
+              <input matInput [(ngModel)]="profileData.department" [readonly]="!isEditing">
+              <mat-icon matPrefix>corporate_fare</mat-icon>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
