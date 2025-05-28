@@ -42,6 +42,10 @@
         <button mat-button routerLink="/home" routerLinkActive="active">
           <mat-icon>home</mat-icon> Home
         </button>
+        <!-- Add Dashboard button for logged in users -->
+        <button mat-button routerLink="/dashboard" routerLinkActive="active">
+          <mat-icon>dashboard</mat-icon> Dashboard
+        </button>
         <button mat-button routerLink="/jobs"  routerLinkActive="active">
           <mat-icon>work</mat-icon> Jobs
         </button>
@@ -104,6 +108,10 @@
         </a>
 
         <ng-container *ngIf="isLoggedIn">
+          <!-- Add Dashboard link in sidenav -->
+          <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+            <mat-icon>dashboard</mat-icon> Dashboard
+          </a>
           <a mat-list-item routerLink="/jobs" routerLinkActive="active">
             <mat-icon>work</mat-icon> Browse Jobs
           </a>

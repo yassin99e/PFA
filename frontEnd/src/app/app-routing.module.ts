@@ -11,6 +11,7 @@ import {ConversationListComponent} from './components/messaging/conversation-lis
 import {JobsComponent} from './components/jobs/jobs.component';
 import {SettingsComponent} from './components/settings/settings.component';
 import {MyProfileComponent} from './components/my-profile/my-profile.component';
+import {DashboardComponent} from './components/dashboard/dashboard.component';
 
 
 const routes: Routes = [
@@ -21,6 +22,7 @@ const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'login', component: LoginComponent },
       { path: 'home', component: HomeComponent },
+      { path: 'dashboard', component: DashboardComponent },
       { path: 'register-candidate', component: RegisterCandidateComponent },
       { path: 'register-recruiter', component: RegisterRecruiterComponent },
       {path: 'jobs', component: JobsComponent },

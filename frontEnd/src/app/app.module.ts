@@ -17,7 +17,7 @@ import {WebsocketControllerComponent} from './components/messaging/websocket-con
 import { JobsComponent } from './components/jobs/jobs.component';
 import { MyProfileComponent } from './components/my-profile/my-profile.component';
 import { SettingsComponent } from './components/settings/settings.component';
-
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 
 // Angular Materials
@@ -37,6 +37,9 @@ import { MatCheckboxModule} from '@angular/material/checkbox';
 import {MatChipsModule} from '@angular/material/chips';
 import {MatBadgeModule} from '@angular/material/badge';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatDividerModule} from '@angular/material/divider';
+
+
 
 
 
@@ -54,7 +57,8 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
     WebsocketControllerComponent,
     JobsComponent,
     MyProfileComponent,
-    SettingsComponent
+    SettingsComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
@@ -83,7 +87,8 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
     MatSidenavModule,
     MatIconModule,
     MatNavList,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatDividerModule
   ],
   providers: [],
   bootstrap: [AppComponent]

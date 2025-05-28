@@ -1,0 +1,179 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1>Analytics Dashboard</h1>
+    <p *ngIf="currentUser">Welcome {{ currentUser.fullName || currentUser.email }} ({{ userRole | titlecase }})</p>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="loadDashboardData()">
+      <mat-icon>refresh</mat-icon> Retry
+    </button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+
+    <!-- Admin Dashboard (for Recruiters and Admins) -->
+    <div *ngIf="adminData && userRole === 'RECRUITER'" class="admin-section">
+      <h2>Platform Overview</h2>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <mat-card class="stat-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>people</mat-icon>
+            <mat-card-title>Total Users</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stat-number">{{ adminData.totalUsers }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>person</mat-icon>
+            <mat-card-title>Candidates</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stat-number">{{ adminData.candidatesCount }}</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>business</mat-icon>
+            <mat-card-title>Recruiters</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="stat-number">{{ adminData.recruitersCount }}</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- User Distribution Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>User Distribution</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="userRoleChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Recruiter Dashboard -->
+    <div *ngIf="recruiterData && userRole === 'RECRUITER'" class="recruiter-section">
+      <h2>My Recruitment Analytics</h2>
+
+      <!-- Job Offers List -->
+      <mat-card class="job-offers-card">
+        <mat-card-header>
+          <mat-card-title>My Job Offers</mat-card-title>
+          <mat-card-subtitle>{{ recruiterData.jobOffers.length }} active offers</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="job-offers-list">
+            <div *ngFor="let job of recruiterData.jobOffers" class="job-offer-item">
+              <div class="job-info">
+                <h4>{{ job.title }}</h4>
+                <p>{{ job.applicationsCount }} applications</p>
+              </div>
+              <mat-chip [color]="job.applicationsCount > 5 ? 'primary' : 'accent'" selected>
+                {{ job.applicationsCount }} apps
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Score Distribution Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Application Match Scores</mat-card-title>
+          <mat-card-subtitle>Total: {{ recruiterData.totalApplications }} applications</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="scoreDistributionChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Candidate Dashboard -->
+    <div *ngIf="candidateData && userRole === 'CANDIDATE'" class="candidate-section">
+      <h2>Market Insights</h2>
+
+      <!-- Trending Jobs Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Most Demanded Job Titles</mat-card-title>
+          <mat-card-subtitle>Find opportunities in high-demand positions</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="trendingJobsChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Trending Technologies Chart -->
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Most Requested Technologies</mat-card-title>
+          <mat-card-subtitle>Skills employers are looking for</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <canvas id="trendingTechChart"></canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Recommendations -->
+      <mat-card class="recommendations-card">
+        <mat-card-header>
+          <mat-card-title>Recommendations</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="recommendations">
+            <div class="recommendation-item">
+              <mat-icon color="primary">trending_up</mat-icon>
+              <div>
+                <h4>Focus on Frontend Development</h4>
+                <p>Frontend Developer positions are in high demand</p>
+              </div>
+            </div>
+            <div class="recommendation-item">
+              <mat-icon color="accent">code</mat-icon>
+              <div>
+                <h4>Learn React & Python</h4>
+                <p>These technologies are most requested by employers</p>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!adminData && !recruiterData && !candidateData" class="empty-state">
+      <mat-icon>dashboard</mat-icon>
+      <h3>No Dashboard Data Available</h3>
+      <p>Please check your user role and try again.</p>
+    </div>
+
+  </div>
+</div>
