@@ -46,6 +46,10 @@ export class MessagingService {
   private readReceiptSubject = new BehaviorSubject<any>(null);
   public readReceipt$ = this.readReceiptSubject.asObservable();
 
+  // Add a subject for conversation updates
+  private conversationUpdatedSubject = new BehaviorSubject<number | null>(null);
+  public conversationUpdated$ = this.conversationUpdatedSubject.asObservable();
+
   constructor(private http: HttpClient) { }
 
   public connect(userId: number): Promise<void> {
@@ -188,12 +192,22 @@ export class MessagingService {
           userId: this.currentUserId
         })
       });
+
+      // Notify that conversation was updated
+      this.conversationUpdatedSubject.next(conversationId);
+
       return new Observable(observer => {
         observer.next();
         observer.complete();
       });
     }
-    return this.http.put<void>(`${API_URL}/messages/conversation/${conversationId}/read?userId=${this.currentUserId}`, {});
+
+    return this.http.put<void>(`${API_URL}/messages/conversation/${conversationId}/read?userId=${this.currentUserId}`, {}).pipe(
+      tap(() => {
+        // Notify that conversation was updated
+        this.conversationUpdatedSubject.next(conversationId);
+      })
+    );
   }
 
   public getConversations(userId: number, role: string): Observable<Conversation[]> {

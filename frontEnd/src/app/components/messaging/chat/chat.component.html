@@ -31,10 +31,6 @@
       <div class="message-content">
         <p>{{ message.content }}</p>
         <span class="message-time">{{ formatTime(message.timestamp) }}</span>
-        <span class="message-status" *ngIf="isSentByCurrentUser(message)">
-          <mat-icon *ngIf="message.isRead" class="read-icon">done_all</mat-icon>
-          <mat-icon *ngIf="!message.isRead" class="sent-icon">done</mat-icon>
-        </span>
       </div>
     </div>
   </div>

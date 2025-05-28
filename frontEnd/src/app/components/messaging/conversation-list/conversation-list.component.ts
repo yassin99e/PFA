@@ -21,6 +21,7 @@ export class ConversationListComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   private newMessageSubscription?: Subscription;
+  private conversationUpdatedSubscription?: Subscription;
 
   constructor(
     private messagingService: MessagingService,
@@ -40,11 +41,24 @@ export class ConversationListComponent implements OnInit, OnDestroy {
         }, 0);
       }
     });
+
+    // Subscribe to conversation updates (when messages are marked as read)
+    this.conversationUpdatedSubscription = this.messagingService.conversationUpdated$.subscribe(conversationId => {
+      if (conversationId) {
+        console.log('Conversation updated, refreshing list:', conversationId);
+        setTimeout(() => {
+          this.loadConversations();
+        }, 100); // Small delay to ensure backend has processed the update
+      }
+    });
   }
 
   ngOnDestroy(): void {
     if (this.newMessageSubscription) {
       this.newMessageSubscription.unsubscribe();
+    }
+    if (this.conversationUpdatedSubscription) {
+      this.conversationUpdatedSubscription.unsubscribe();
     }
   }
 
