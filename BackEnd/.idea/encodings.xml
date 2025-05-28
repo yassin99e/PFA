@@ -3,6 +3,7 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/AI_Matching/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Api_Gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ApplicationService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/JobService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/MessagingService/MessagingService/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ResumeService/src/main/java" charset="UTF-8" />

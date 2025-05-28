@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/User_MicroService/UserMicroService/pom.xml" />
         <option value="$PROJECT_DIR$/ResumeService/pom.xml" />
         <option value="$PROJECT_DIR$/JobService/pom.xml" />
+        <option value="$PROJECT_DIR$/ApplicationService/pom.xml" />
       </list>
     </option>
   </component>

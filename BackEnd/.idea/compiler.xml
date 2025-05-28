@@ -11,13 +11,14 @@
         <module name="ResumeService" />
         <module name="Service_Discovery" />
         <module name="JobService" />
+        <module name="ApplicationService" />
       </profile>
       <profile name="Annotation profile for UserMicroService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.36/lombok-1.18.36.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="UserMicroService" />
       </profile>
@@ -37,6 +38,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="AI_Matching" options="-parameters" />
       <module name="Api_Gateway" options="-parameters" />
+      <module name="ApplicationService" options="-parameters" />
       <module name="JobService" options="-parameters" />
       <module name="MessagingService" options="-parameters" />
       <module name="ResumeService" options="-parameters" />
