@@ -21,8 +21,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   messageContent = new FormControl('', [Validators.required]);
   loading = true;
   error: string | null = null;
-
-  // Store the other participant's name
   otherParticipantName: string = '';
 
   private newMessageSubscription?: Subscription;
@@ -44,24 +42,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     });
 
-    // Connect to WebSocket first
+    // Connect to WebSocket
     const currentUser = this.userService.getCurrentUser();
     if (currentUser) {
       try {
         await this.messagingService.connect(currentUser.id);
         console.log('WebSocket connected successfully');
-
-        // Subscribe to new messages after connection
         this.setupMessageSubscriptions();
       } catch (error) {
         console.error('Failed to connect to WebSocket:', error);
-        // Continue without WebSocket - will use REST API as fallback
         this.setupMessageSubscriptions();
       }
     }
   }
-
-  // Replace your setupMessageSubscriptions method in chat.component.ts:
 
   private setupMessageSubscriptions(): void {
     // Subscribe to new messages
@@ -69,6 +62,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       message => {
         if (message && message.conversationId === this.conversationId) {
           console.log('✅ Received new message in chat:', message);
+
+          // Normalize the read property
+          if (message.read !== undefined) {
+            message.isRead = message.read;
+          }
 
           // Check if message already exists to avoid duplicates
           const existingMessage = this.messages.find(m => m.id === message.id);
@@ -89,13 +87,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
           const message = this.messages.find(m => m.id === receipt.messageId);
           if (message) {
             message.isRead = receipt.isRead;
+            message.read = receipt.isRead; // Keep both for compatibility
           }
         }
       }
     );
   }
 
-// Add this helper method:
   private sortMessages(): void {
     this.messages.sort((a, b) => {
       const dateA = new Date(a.timestamp || 0);
@@ -104,7 +102,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-// Replace your sendMessage method:
   sendMessage(): void {
     if (!this.messageContent.value || !this.conversationId) {
       return;
@@ -141,8 +138,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.readReceiptSubscription) {
       this.readReceiptSubscription.unsubscribe();
     }
-    // Don't disconnect here if other components might use WebSocket
-    // this.messagingService.disconnect();
   }
 
   ngAfterViewChecked(): void {
@@ -167,6 +162,13 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.conversation = conversation;
         this.messages = conversation.messages || [];
 
+        // Normalize read properties for all messages
+        this.messages.forEach(msg => {
+          if (msg.read !== undefined) {
+            msg.isRead = msg.read;
+          }
+        });
+
         // Sort messages by timestamp
         this.messages.sort((a, b) => {
           const dateA = new Date(a.timestamp || 0);
@@ -174,14 +176,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
           return dateA.getTime() - dateB.getTime();
         });
 
-        // Load the other participant's name
         this.loadOtherParticipantName();
-
         this.loading = false;
-
-        // Mark all messages as read
         this.markAllAsRead();
-
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: (err) => {
@@ -198,13 +195,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const currentUser = this.userService.getCurrentUser();
     if (!currentUser) return;
 
-    // Determine which participant is the other user
     const otherUserId =
       currentUser.id === this.conversation.participantOneId ?
         this.conversation.participantTwoId :
         this.conversation.participantOneId;
 
-    // Fetch the real name from the UserService
     this.userService.getUserNameById(otherUserId).subscribe({
       next: (name) => {
         this.otherParticipantName = name;
@@ -222,22 +217,26 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const currentUser = this.userService.getCurrentUser();
     if (!currentUser) return;
 
-    // Mark unread messages as read
+    // Mark unread messages as read - check both properties
     const unreadMessages = this.messages.filter(
-      msg => msg.receiverId === currentUser.id && !msg.isRead
+      msg => msg.receiverId === currentUser.id &&
+        (msg.isRead === false || msg.read === false)
     );
 
     if (unreadMessages.length > 0) {
       this.messagingService.markConversationAsRead(this.conversationId).subscribe();
-
       // Update local state
-      unreadMessages.forEach(msg => msg.isRead = true);
+      unreadMessages.forEach(msg => {
+        msg.isRead = true;
+        msg.read = true;
+      });
     }
   }
 
   private markAsRead(message: Message): void {
     const currentUser = this.userService.getCurrentUser();
-    if (!currentUser || message.receiverId !== currentUser.id || message.isRead) {
+    if (!currentUser || message.receiverId !== currentUser.id ||
+      message.isRead === true || message.read === true) {
       return;
     }
 
@@ -245,6 +244,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.messagingService.markAsRead(message.id).subscribe({
         next: () => {
           message.isRead = true;
+          message.read = true;
         },
         error: (err) => {
           console.error('Error marking message as read:', err);
@@ -253,15 +253,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-
-  // Updated method to return the loaded name
   getOtherParticipantName(): string {
     return this.otherParticipantName || 'Loading...';
-  }
-
-  isOnline(): boolean {
-    // Placeholder - in real app, would check with user status service
-    return true;
   }
 
   isSentByCurrentUser(message: Message): boolean {
@@ -301,7 +294,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-  // Method to refresh conversation if needed
   refreshConversation(): void {
     this.loadConversation();
   }

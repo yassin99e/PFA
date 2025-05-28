@@ -1,6 +1,5 @@
 package ma.ensa.messagingservice.Controller;
 
-
 import ma.ensa.messagingservice.DTOs.ConversationDTO;
 import ma.ensa.messagingservice.DTOs.MessageCreateDTO;
 import ma.ensa.messagingservice.DTOs.MessageDTO;
@@ -65,8 +64,19 @@ public class MessageController {
     public ResponseEntity<ConversationDTO> getConversationById(@PathVariable Long id) {
         return ResponseEntity.ok(conversationService.findById(id));
     }
+
     @GetMapping("/unread/count")
     public ResponseEntity<Integer> getUnreadMessagesCount(@RequestParam Long userId) {
-        return ResponseEntity.ok(messageService.countUnreadMessagesForUser(userId));
+        System.out.println("Received request for unread count for user: " + userId);
+
+        try {
+            Integer count = messageService.countUnreadMessagesForUser(userId);
+            System.out.println("Returning unread count: " + count + " for user: " + userId);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            System.err.println("Error getting unread count for user " + userId + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(0); // Return 0 as fallback
+        }
     }
 }

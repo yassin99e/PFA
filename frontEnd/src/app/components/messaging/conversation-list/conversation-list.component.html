@@ -43,7 +43,6 @@
       (click)="openConversation(conversation.id)">
       <div class="avatar">
         <mat-icon>account_circle</mat-icon>
-        <div class="status-indicator" [ngClass]="{'online': isUserOnline(conversation)}"></div>
       </div>
       <div class="conversation-info">
         <div class="conversation-header">

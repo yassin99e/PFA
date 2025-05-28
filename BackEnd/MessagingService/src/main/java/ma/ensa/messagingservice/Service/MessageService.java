@@ -1,6 +1,5 @@
 package ma.ensa.messagingservice.Service;
 
-
 import ma.ensa.messagingservice.DTOs.MessageCreateDTO;
 import ma.ensa.messagingservice.DTOs.MessageDTO;
 import ma.ensa.messagingservice.Entities.Conversation;
@@ -15,8 +14,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
-
 
 @Service
 public class MessageService {
@@ -58,7 +55,7 @@ public class MessageService {
         message.setContent(messageDto.getContent());
         message.setSenderRole(messageDto.getSenderRole());
         message.setTimestamp(LocalDateTime.now());
-        message.setRead(false);
+        message.setRead(false); // Always set to false when creating a new message
 
         Message savedMessage = messageRepo.save(message);
         MessageDTO savedDto = toDTO(savedMessage);
@@ -83,20 +80,42 @@ public class MessageService {
     public void markAsRead(Long messageId) {
         Message message = messageRepo.findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
-        message.setRead(true);
-        messageRepo.save(message);
+
+        // Only mark as read if it's not already read
+        if (!message.isRead()) {
+            message.setRead(true);
+            messageRepo.save(message);
+        }
     }
 
     public void markConversationAsRead(Long conversationId, Long userId) {
         List<Message> unreadMessages = messageRepo.findUnreadMessagesForUser(conversationId, userId);
-        unreadMessages.forEach(message -> {
-            message.setRead(true);
-            messageRepo.save(message);
-        });
+
+        // Batch update all unread messages
+        if (!unreadMessages.isEmpty()) {
+            unreadMessages.forEach(message -> message.setRead(true));
+            messageRepo.saveAll(unreadMessages);
+        }
     }
 
     public void deleteMessage(Long id) {
+        if (!messageRepo.existsById(id)) {
+            throw new ResourceNotFoundException("Message not found with id: " + id);
+        }
         messageRepo.deleteById(id);
+    }
+
+    // Fixed method to properly count unread messages
+    public Integer countUnreadMessagesForUser(Long userId) {
+        try {
+            int count = messageRepo.countUnreadMessagesForUser(userId);
+            System.out.println("Unread count for user " + userId + ": " + count);
+            return count;
+        } catch (Exception e) {
+            System.err.println("Error counting unread messages for user " + userId + ": " + e.getMessage());
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     private MessageDTO toDTO(Message msg) {
@@ -108,10 +127,7 @@ public class MessageService {
         dto.setContent(msg.getContent());
         dto.setSenderRole(msg.getSenderRole().name());
         dto.setTimestamp(msg.getTimestamp());
-        dto.setRead(msg.isRead());
+        dto.setRead(msg.isRead()); // Make sure this correctly maps the boolean value
         return dto;
-    }
-    public Integer countUnreadMessagesForUser(Long userId) {
-        return messageRepo.countUnreadMessagesForUser(userId);
     }
 }

@@ -26,7 +26,7 @@ export class ConversationListComponent implements OnInit, OnDestroy {
     private messagingService: MessagingService,
     private userService: UserService,
     private router: Router,
-    private cdr: ChangeDetectorRef // Add ChangeDetectorRef
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -35,7 +35,6 @@ export class ConversationListComponent implements OnInit, OnDestroy {
     // Subscribe to new messages to update list
     this.newMessageSubscription = this.messagingService.newMessage$.subscribe(message => {
       if (message) {
-        // Use setTimeout to avoid change detection errors
         setTimeout(() => {
           this.loadConversations();
         }, 0);
@@ -62,14 +61,25 @@ export class ConversationListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.conversations = data;
-          // Load participant names for all conversations
+
+          // Normalize read properties for all messages in all conversations
+          this.conversations.forEach(conversation => {
+            if (conversation.messages) {
+              conversation.messages.forEach(msg => {
+                if (msg.read !== undefined) {
+                  msg.isRead = msg.read;
+                }
+              });
+            }
+          });
+
           this.loadParticipantNames(currentUser.id);
         },
         error: (err) => {
           console.error('Error loading conversations:', err);
           this.error = 'Failed to load conversations. Please try again.';
           this.loading = false;
-          this.cdr.detectChanges(); // Manually trigger change detection
+          this.cdr.detectChanges();
         }
       });
   }
@@ -77,7 +87,7 @@ export class ConversationListComponent implements OnInit, OnDestroy {
   private loadParticipantNames(currentUserId: number): void {
     if (this.conversations.length === 0) {
       this.loading = false;
-      this.cdr.detectChanges(); // Manually trigger change detection
+      this.cdr.detectChanges();
       return;
     }
 
@@ -108,7 +118,7 @@ export class ConversationListComponent implements OnInit, OnDestroy {
           conversation.otherParticipantName = names[index];
         });
         this.loading = false;
-        this.cdr.detectChanges(); // Manually trigger change detection
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading participant names:', err);
@@ -118,7 +128,7 @@ export class ConversationListComponent implements OnInit, OnDestroy {
           conversation.otherParticipantName = `User ${otherUserId}`;
         });
         this.loading = false;
-        this.cdr.detectChanges(); // Manually trigger change detection
+        this.cdr.detectChanges();
       }
     });
   }
@@ -127,13 +137,11 @@ export class ConversationListComponent implements OnInit, OnDestroy {
     this.router.navigate(['/messaging/conversation', conversationId]);
   }
 
-  // For recruiters only
   startNewConversation(): void {
     const currentUser = this.userService.getCurrentUser();
     if (!currentUser || currentUser.role !== 'RECRUITER') {
       return;
     }
-
     this.router.navigate(['/messaging/new']);
   }
 
@@ -166,43 +174,27 @@ export class ConversationListComponent implements OnInit, OnDestroy {
     return new Date(lastMessage.timestamp!).toLocaleString();
   }
 
-  // Fix for change detection error - use getter methods
+  // Fixed method to properly check for unread messages
   hasUnreadMessages(conversation: Conversation): boolean {
     const currentUser = this.userService.getCurrentUser();
     if (!currentUser || !conversation.messages) return false;
 
+    // Check both 'isRead' and 'read' properties for compatibility
     return conversation.messages.some(msg =>
-      msg.receiverId === currentUser.id && !msg.isRead
+      msg.receiverId === currentUser.id &&
+      (msg.isRead === false || msg.read === false)
     );
   }
 
+  // Fixed method to properly count unread messages
   getUnreadCount(conversation: Conversation): number {
     const currentUser = this.userService.getCurrentUser();
     if (!currentUser || !conversation.messages) return 0;
 
+    // Check both 'isRead' and 'read' properties for compatibility
     return conversation.messages.filter(msg =>
-      msg.receiverId === currentUser.id && !msg.isRead
+      msg.receiverId === currentUser.id &&
+      (msg.isRead === false || msg.read === false)
     ).length;
-  }
-
-  // Cache the online status to avoid repeated random calls
-  private onlineStatusCache = new Map<number, boolean>();
-
-  isUserOnline(conversation: Conversation): boolean {
-    const currentUser = this.userService.getCurrentUser();
-    if (!currentUser) return false;
-
-    const otherUserId = currentUser.id === conversation.participantOneId ?
-      conversation.participantTwoId : conversation.participantOneId;
-
-    // Return cached status if available
-    if (this.onlineStatusCache.has(otherUserId)) {
-      return this.onlineStatusCache.get(otherUserId)!;
-    }
-
-    // Generate random status and cache it
-    const isOnline = Math.random() > 0.5;
-    this.onlineStatusCache.set(otherUserId, isOnline);
-    return isOnline;
   }
 }

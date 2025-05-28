@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import {map} from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 const API_URL = 'http://localhost:8080/MESSAGINGSERVICE/api';
 const WS_URL = 'http://localhost:8082/ws';
@@ -18,12 +18,13 @@ export interface Message {
   senderRole: string;
   timestamp?: Date;
   isRead?: boolean;
+  read?: boolean; // Backend sometimes sends 'read' instead of 'isRead'
 }
 
 export interface Conversation {
   id: number;
-  participantOneId: number; // Candidate
-  participantTwoId: number; // Recruiter
+  participantOneId: number;
+  participantTwoId: number;
   startedAt: Date;
   messages: Message[];
 }
@@ -46,8 +47,6 @@ export class MessagingService {
   public readReceipt$ = this.readReceiptSubject.asObservable();
 
   constructor(private http: HttpClient) { }
-
-  // Replace your connect method in messaging.service.ts:
 
   public connect(userId: number): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -72,8 +71,7 @@ export class MessagingService {
         console.log('WebSocket Connected for user:', userId);
         this.isConnected = true;
 
-        // Subscribe to conversation topics (this is the key change)
-        // We'll subscribe to all conversation topics for now
+        // Subscribe to conversation topics
         this.stompClient?.subscribe('/topic/conversation/*', message => {
           console.log('📢 Topic message received:', message.body);
 
@@ -84,7 +82,11 @@ export class MessagingService {
               receivedMessage.timestamp = new Date(receivedMessage.timestamp);
             }
 
-            // Emit message to subscribers
+            // Normalize the read property - backend sends 'read', frontend expects 'isRead'
+            if (receivedMessage.read !== undefined) {
+              receivedMessage.isRead = receivedMessage.read;
+            }
+
             this.newMessageSubject.next(receivedMessage);
 
             if (receivedMessage.receiverId === userId) {
@@ -95,7 +97,7 @@ export class MessagingService {
           }
         });
 
-        // Keep the user-specific subscriptions for read receipts
+        // Subscribe to read receipts
         this.stompClient?.subscribe('/user/' + userId + '/queue/read-receipt', receipt => {
           console.log('Received read receipt:', receipt.body);
           const readData = JSON.parse(receipt.body);
@@ -128,10 +130,8 @@ export class MessagingService {
     });
   }
 
-// Replace your sendMessage method:
   public sendMessage(message: Message): Observable<Message> {
     if (this.isWebSocketConnected()) {
-      // Get conversation to determine receiver
       return this.getConversation(message.conversationId).pipe(
         tap(conversation => {
           const receiverId = this.currentUserId === conversation.participantOneId ?
@@ -145,17 +145,13 @@ export class MessagingService {
           });
         })
       ).pipe(
-        // Return original message immediately
         map(() => message)
       );
     } else {
-      // Fallback to REST API
       return this.http.post<Message>(`${API_URL}/messages`, message);
     }
   }
 
-
-  // Disconnect from WebSocket server
   public disconnect(): void {
     if (this.stompClient && this.isConnected) {
       this.stompClient.deactivate();
@@ -164,20 +160,17 @@ export class MessagingService {
     }
   }
 
-  // Check if WebSocket is connected
   public isWebSocketConnected(): boolean {
     return this.isConnected && this.stompClient?.connected === true;
   }
 
-
-  // Mark message as read
   public markAsRead(messageId: number): Observable<void> {
     if (this.isWebSocketConnected()) {
       this.stompClient?.publish({
         destination: '/app/chat.markRead',
         body: JSON.stringify({ messageId, userId: this.currentUserId })
       });
-      this.updateUnreadCount(-1); // Decrement unread count
+      this.updateUnreadCount(-1);
       return new Observable(observer => {
         observer.next();
         observer.complete();
@@ -186,7 +179,6 @@ export class MessagingService {
     return this.http.put<void>(`${API_URL}/messages/${messageId}/read`, {});
   }
 
-  // Mark all messages in a conversation as read
   public markConversationAsRead(conversationId: number): Observable<void> {
     if (this.isWebSocketConnected()) {
       this.stompClient?.publish({
@@ -204,22 +196,18 @@ export class MessagingService {
     return this.http.put<void>(`${API_URL}/messages/conversation/${conversationId}/read?userId=${this.currentUserId}`, {});
   }
 
-  // Get all conversations for the current user
   public getConversations(userId: number, role: string): Observable<Conversation[]> {
     return this.http.get<Conversation[]>(`${API_URL}/conversations/user/${userId}?role=${role}`);
   }
 
-  // Get a specific conversation
   public getConversation(id: number): Observable<Conversation> {
     return this.http.get<Conversation>(`${API_URL}/messages/conversation/detail/${id}`);
   }
 
-  // Get messages for a conversation
   public getMessages(conversationId: number): Observable<Message[]> {
     return this.http.get<Message[]>(`${API_URL}/messages/conversation/${conversationId}`);
   }
 
-  // Start a new conversation (only for recruiters)
   public startConversation(recruiterId: number, candidateId: number): Observable<Conversation> {
     return this.http.post<Conversation>(
       `${API_URL}/conversations/start?recruiterId=${recruiterId}&candidateId=${candidateId}`,
@@ -227,14 +215,12 @@ export class MessagingService {
     );
   }
 
-  // Update unread messages count
   private updateUnreadCount(change: number): void {
     const current = this.unreadMessagesSubject.value;
     this.unreadMessagesSubject.next(Math.max(0, current + change));
   }
 
-  // Get the count of unread messages
-  getUnreadCount(userId: number): Observable<number> {
+  public getUnreadCount(userId: number): Observable<number> {
     const url = `${API_URL}/messages/unread/count`;
     console.log('Request URL:', url);
     console.log('User ID:', userId);
