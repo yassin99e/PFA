@@ -10,6 +10,7 @@
         <module name="Api_Gateway" />
         <module name="ResumeService" />
         <module name="Service_Discovery" />
+        <module name="NotificationService" />
         <module name="JobService" />
         <module name="ApplicationService" />
       </profile>
@@ -41,6 +42,7 @@
       <module name="ApplicationService" options="-parameters" />
       <module name="JobService" options="-parameters" />
       <module name="MessagingService" options="-parameters" />
+      <module name="NotificationService" options="-parameters" />
       <module name="ResumeService" options="-parameters" />
       <module name="Service_Discovery" options="-parameters" />
       <module name="UserMicroService" options="-parameters" />

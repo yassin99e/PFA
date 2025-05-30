@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: 'mysql:latest'
+    environment:
+      - 'MYSQL_DATABASE=applications'
+      - 'MYSQL_PASSWORD=12345'
+      - 'MYSQL_ROOT_PASSWORD=12345'
+      - 'MYSQL_USER=yassine'
+    ports:
+      - '3310:3306'  # Maps host port 3310 to container port 3306
+    volumes:
+      - mysql_applications_data:/var/lib/mysql  # Persistent volume for MySQL data
+    restart: unless-stopped  # Optional: ensures container restarts unless explicitly stopped
+
+volumes:
+  mysql_applications_data:

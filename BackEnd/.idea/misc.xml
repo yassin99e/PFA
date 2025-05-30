@@ -12,6 +12,7 @@
         <option value="$PROJECT_DIR$/ResumeService/pom.xml" />
         <option value="$PROJECT_DIR$/JobService/pom.xml" />
         <option value="$PROJECT_DIR$/ApplicationService/pom.xml" />
+        <option value="$PROJECT_DIR$/NotificationService/pom.xml" />
       </list>
     </option>
   </component>
